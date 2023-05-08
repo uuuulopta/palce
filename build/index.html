@@ -1,27 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Place</title>
 </head>
 <body>
+    
+    
+    
+    <div id="draw">
+        <span style="color: gray;">Scale:<span id="scale">1</span></span>
+        <div class="drawWrapper">
+                <div class="colorWrapper">
+                    <input type="color" name="" id="">
+                    <input type="color" name="" id="">
+                    <input type="color" name="" id="">
+                    <input type="color" name="" id="">
+                    <input type="color" name="" id="">
+                    <input type="color" name="" id="">
+                    <input type="color" name="" id="">
+                    <input type="color" name="" id="">
+                    <input type="color" name="" id="">
+                </div>
+                <div class="zoomWrapper">
+                    <button id="zoomin">zoom in</button>
+                    <button id="zoomout">zoom out</button>
+    
+                </div>
+            </div>
+   </div>
     <div id="control">
             <canvas id="main" height="500" width="500"></canvas>
     </div>
-   
     <script type="module" src="index.js" ></script>
     <style>
+        input[type="color"]{
+            opacity: 0.5;
+            width: calc(25vw / 4);
+        }
+        .colorWrapper{
+            width: 50%;
+            display:flex;
+            flex-wrap: wrap;
+            gap: 2px;
+        }
+        .zoomWrapper > button{
+            width: 0;
+            height: 50%;
+            min-width: 100%;
+        }
+        .zoomWrapper{
+            flex-grow: 1;
+        }
+        #draw{
+            bottom: 1em;
+            left:25vw;
+            position: fixed;
+            z-index: 1;
+        }
+        .drawWrapper{
+            display: flex;
+            
+            padding: 0.5em;
+            border: solid grey 1px;
+            border-radius: 4px;
+            background-color: #f2f2f230;
+            width: 50vw;
+            height: 5rem;
+            
+        }
         body{
             overflow: hidden;
         }
+        
         #main{
-  
+            /* border: solid 1px black transparent; */
+            /* margin:-1px; */
+            
             image-rendering: pixelated;
 
         }
         #control{
+            /* border-style: double; */
+            /* width: fit-content; */
+            /* height: fit-content; */
+            /* border: double 1px gray; */
             transform-origin: 0px 0px;
             transform: scale(1) translate(0px, 0px);
 
