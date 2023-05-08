@@ -7,8 +7,9 @@ const translate = document.getElementById("translate")!
 const scaleSpan = document.getElementById("scale")!
 const zoomin = document.getElementById("zoomin")!
 const zoomout = document.getElementById("zoomout")!
-const colors = document.getElementsByName("input")!
-let selectedColor: HTMLInputElement;
+const colors = Array.from(document.getElementsByTagName("input"))!
+let colorClickCounter= 0;
+let selectedColor: HTMLInputElement = colors[0];
 let mousedown = false;
 let mousedownXY: number[] = [0,0]
 let mouseXY: number[] = [0,0];
@@ -22,21 +23,32 @@ function mapCords(x:number,y:number){
     return WIDTH * y + x*4
 }
 function getPixelFillStyle(x:number,y:number){
-    var i = mapCords(x,y);       
+    let i = mapCords(x,y);       
     return `rgba(${bytes[i]},${bytes[i+1]},${bytes[i+2]},${i+3})`
 }
 function redrawPixel(x:number,y:number){
-    var i = mapCords(x,y);       
+    let i = mapCords(x,y);       
     ctx.clearRect(x,y,1,1)
     ctx.fillStyle = `rgba(${bytes[i]},${bytes[i+1]},${bytes[i+2]},1)`
     ctx.fillRect(x,y,1,1)
 }
 function dimPixel(opacity: number,x: number,y: number){
-    var i = mapCords(x,y);       
+    let i = mapCords(x,y);       
     ctx.clearRect(x,y,1,1)
     ctx.fillStyle = `rgba(${bytes[i]},${bytes[i+1]},${bytes[i+2]},${opacity})`
     if(bytes[i] == 255 && bytes[i+1] == 255 && bytes[i+2] == 255) ctx.fillStyle = ctx.fillStyle=`rgba(${0},${0},${0},${opacity})`
     ctx.fillRect(x,y,1,1)
+}
+function drawPixel(x:number,y:number){
+    let i = mapCords(x,y);       
+    ctx.clearRect(x,y,1,1)
+    ctx.fillStyle = selectedColor.value
+    let rgb = hexToRgbA(selectedColor.value)
+    bytes[i] = rgb[0]  
+    bytes[i+1] = rgb[1]  
+    bytes[i+2] = rgb[2]  
+    ctx.fillRect(x,y,1,1)
+
 }
 function selectPixel(x : number, y : number): void{
     for(let i = 0.9; i>=0; i-=0.1){
@@ -57,8 +69,18 @@ function setTransform() {
     control.style.transform = "translate(" + xoff + "px, " + yoff + "px) scale(" + scale + ")";
     scaleSpan.innerHTML = scale.toString();
 }
-
-
+function hexToRgbA(hex:string): number[]{
+    var c:any;
+    if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){
+        c= hex.substring(1).split('');
+        if(c.length== 3){
+            c= [c[0], c[0], c[1], c[1], c[2], c[2]];
+        }
+        c= '0x'+c.join('');
+        return [(c>>16)&255, (c>>8)&255, c&255];
+    }
+    throw new Error('Bad Hex');
+}
 let canvas = <HTMLCanvasElement> document.getElementById("main");
 const ctx = canvas.getContext("2d")!
 let bytes = new Uint8ClampedArray(WIDTH*HEIGHT*4).map((x,i) => 
@@ -85,17 +107,22 @@ canvas.addEventListener("mouseup", (e) => {
     if(!mouseMovedHold){
         let mouseX = e.clientX - box.left ;
         let mouseY = e.clientY - box.top ;
-        //TODO add check if its clicked already
         mouseX = Math.floor((mouseX / box.width) * canvas.width);
         mouseY = Math.floor((mouseY / box.height) * canvas.height);
-        if ((mouseX == lastRect.x ) && (mouseY == lastRect.y )) return;
+        
+        // setting color
+        if ((mouseX == lastRect.x ) && (mouseY == lastRect.y )) {
+            drawPixel(mouseX,mouseY)
+            return
+        };
+        // dimming pixel logic
         timeouts.forEach(x => clearTimeout(x));
         timeouts = [];
         redrawPixel(lastRect.x,lastRect.y)
-        // window.setTimeout(() => redrawPixel(lastRect.x,lastRect.y),2000);
         lastRect.x = mouseX
         lastRect.y = mouseY
         selectPixel(mouseX,mouseY)
+
         
     }
     mouseMovedHold = false;
@@ -111,7 +138,6 @@ control.addEventListener("mousemove", (e) => {
 
 // thanks to fmacdee
 body.onwheel = function(e) {
-    e.preventDefault();
     // take the scale into account with the offset
     console.log(e.clientX,e.clientY);
     var xs = (e.clientX - xoff) / scale,
@@ -133,7 +159,7 @@ body.onwheel = function(e) {
 
 zoomin.onclick = function (e){
     var box = canvas.getBoundingClientRect()
-    for(var i = 0; i < 3; i++){
+    for(let i = 0; i < 3; i++){
         body.dispatchEvent(
             new WheelEvent("wheel",{
                 clientX: (box.x + 1/2*box.width ),
@@ -146,7 +172,7 @@ zoomin.onclick = function (e){
 }
 zoomout.onclick = function (e){
     var box = canvas.getBoundingClientRect()
-    for(var i = 0; i < 3; i++){
+    for(let i = 0; i < 3; i++){
         body.dispatchEvent(
             new WheelEvent("wheel",{
                 clientX: (box.x + 1/2*box.width ),
@@ -157,4 +183,14 @@ zoomout.onclick = function (e){
         )
     }
 }
+colors.forEach((color) => {
+    color.onclick = function (e){
+        if(selectedColor != color) e.preventDefault()
+        selectedColor.style.opacity = "0.5"
+        selectedColor = color;
+        color.style.opacity = "1"
+        
 
+
+    }
+})

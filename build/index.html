@@ -16,7 +16,7 @@
         <span style="color: gray;">Scale:<span id="scale">1</span></span>
         <div class="drawWrapper">
                 <div class="colorWrapper">
-                    <input type="color" name="" id="">
+                    <input style="opacity:1" type="color" name="" id="">
                     <input type="color" name="" id="">
                     <input type="color" name="" id="">
                     <input type="color" name="" id="">
@@ -42,6 +42,7 @@
             opacity: 0.5;
             width: calc(25vw / 4);
         }
+
         .colorWrapper{
             width: 50%;
             display:flex;
@@ -57,6 +58,9 @@
             flex-grow: 1;
         }
         #draw{
+            -webkit-user-select: none; /* Safari */
+            -ms-user-select: none; /* IE 10 and IE 11 */
+            user-select: none; /* Standard syntax */
             bottom: 1em;
             left:25vw;
             position: fixed;
