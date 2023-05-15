@@ -1,2 +1,5 @@
 node_modules
 build/index.js
+build/api/config/database.json
+*/.env
+*.log
