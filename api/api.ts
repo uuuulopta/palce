@@ -24,13 +24,11 @@ const port = 300
 
 const hexToBase64 = function(hex: String) {return Buffer.from(hex, 'hex').toString('base64') }
 const Base64ToHex = function(base64: String) {return Buffer.from(base64, 'base64').toString('hex') }
+
 const run = async () => {
+
 await client.connect().then(() => {logger.info(`Connected to ${uri} `)})
-// pixels.insertOne({value: hexToBase64("FFFFFF"),x: 0, y: 0});
-//const docs = pixels.find({},{projection: {_id: 0}});
-//for await (const doc of docs){
-//    console.dir(doc);
-//}
+
 console.log("Path = " + "/" + process.env.API_URL_PREFIX +  '/api')
   app.get(( "/" + process.env.API_URL_PREFIX +  '/api' ).replace("//","/"), async (req: Request, res: Response) => {
   try{
