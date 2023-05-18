@@ -2,8 +2,12 @@ import { createClient } from 'redis';
 import { logger } from './loggingSetup';
 
 function colorBufferToInt(color: Buffer): number{
-return color.readUIntBE(0,1)
+const buf = Buffer.alloc(3)
+const temp = color; 
+temp.copy(buf, buf.length - temp.length)
+return buf.readUIntBE(0,3)
 }
+const getOffset = (x: number,y: number): number => { return  500 * y + x };
 const client = createClient();
 const run = async() => {
 
@@ -14,12 +18,25 @@ await client.connect();
 //const res =await client.get("x1y1");
 //console.log(res);
 //client.disconnect();
+const field = await client.get("field") 
+console.dir(Buffer.from(field).readInt8(2));
 }
-async function setPixel(x: number, y: number, color: Buffer){
-    const offset: number = 500 * y + x;
-    const colorInt: Number = colorBufferToInt(color)
-    await client.sendCommand([`BITFIELD field SET u24 ${offset} ${colorInt}`])
+async function setColor(x: number, y: number, color: Buffer){
+    const offset = getOffset(x,y);
+    const colorInt: number = colorBufferToInt(color)
+    await client.bitField("field",[{
+        operation: "SET",
+        encoding: "u24",
+        offset: offset,
+        value: colorInt
 
+    }])
+
+}
+
+async function readField(){
+   const field = await client.get("field");
+    return Uint8ClampedArray.from(Buffer.from( field )) 
 }
 run();
 
