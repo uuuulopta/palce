@@ -1,42 +1,42 @@
-import { createClient } from 'redis';
+import { createClient,commandOptions } from 'redis';
 import { logger } from './loggingSetup';
 
 function colorBufferToInt(color: Buffer): number{
-const buf = Buffer.alloc(3)
-const temp = color; 
+const buf = Buffer.alloc(4)
+const temp = color;
+console.log(color)
+console.log(buf)
 temp.copy(buf, buf.length - temp.length)
-return buf.readUIntBE(0,3)
+return buf.readUIntBE(0,4)
 }
 const getOffset = (x: number,y: number): number => { return  500 * y + x };
 const client = createClient();
-const run = async() => {
+export const run = async() => {
 
 client.on('error', err => logger.error('Redis Client Error', err));
-client.on('connect',(stream) => {logger.info("Successfully connected to localhost")});
+client.on('connect',() => {logger.info("Successfully connected to redis")});
 await client.connect();
-//await client.set("x1y1","pixel2");
-//const res =await client.get("x1y1");
-//console.log(res);
-//client.disconnect();
-const field = await client.get("field") 
-console.dir(Buffer.from(field).readInt8(2));
+
 }
-async function setColor(x: number, y: number, color: Buffer){
+export async function setColor(x: number, y: number, color: Buffer){
     const offset = getOffset(x,y);
     const colorInt: number = colorBufferToInt(color)
+    console.log(`ColorInt: ${colorInt},Offset: ${offset}`)
     await client.bitField("field",[{
         operation: "SET",
-        encoding: "u24",
-        offset: offset,
+        encoding: "u32",
+        offset: "#" + offset.toString(),
         value: colorInt
 
     }])
 
 }
 
-async function readField(){
-   const field = await client.get("field");
-    return Uint8ClampedArray.from(Buffer.from( field )) 
+export async function readField(){
+   const field = await client.get(commandOptions({returnBuffers:true}),"field");
+   //TODO: if field is empty transfer mongodb to redis and read field again
+    if(field == null) return Buffer.from( Uint8ClampedArray.from([255,255,255,255]) )
+    return Buffer.from( Uint8ClampedArray.from(field) ) 
 }
-run();
+
 

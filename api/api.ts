@@ -1,25 +1,27 @@
 import {Express, Request, Response,} from "express"
 import express = require("express");
-import {uri,client,Pixel,pixels,insertColor}  from "./db";
+import * as mongo  from "./db";
+import * as redis from "./redis"
 import {logger} from "./loggingSetup"
 import dotenv = require('dotenv')
-import { buffer } from "stream/consumers";
 dotenv.config()
 
-async function parseInput(color: any, x: any, y: any, callback: Function){
-    const hexRegex = new RegExp("[0-9A-F]{6}")
-    if(typeof color !== "string") throw new Error("Color is not a string!")
-        if(typeof x !== "string") throw new Error("X is not a string!")
-        if(typeof y !== "string") throw new Error("Y is not a string!")
+async function parseInput(color: string, x: string, y: string, callback: Function){
+    const hexRegex = new RegExp("[0-9A-Fa-f]{6}")
+    if(typeof color !== "string") throw Error("Color is not a string!")
+        if(typeof x !== "number") throw Error("X is not a number!")
+        if(typeof y !== "number") throw Error("Y is not a number!")
         if(color && x && y){
             if(!hexRegex.test(color)) throw Error("Bad color value!");
-            if(!RegExp( "[0-9]+" ).test(x)) throw Error("x is not a number!")
-            if(!RegExp( "[0-9]+" ).test(y)) throw Error("y is not a number!")
-            await callback(color,x,y)
+            if(!RegExp( "[0-9]+" ).test(x)) throw Error("Bad X")
+            if(!RegExp( "[0-9]+" ).test(y)) throw Error("Bad Y")
+            await callback(Buffer.from( color + "FF","hex" ),Number(x),Number(y))
     }
 }
 const app: Express = express()
-const port = 300
+app.use(express.json())
+app.use(express.urlencoded({extended: true}))
+const port = 3000
 
 
 const hexToBase64 = function(hex: String) {return Buffer.from(hex, 'hex').toString('base64') }
@@ -27,26 +29,38 @@ const Base64ToHex = function(base64: String) {return Buffer.from(base64, 'base64
 
 const run = async () => {
 
-await client.connect().then(() => {logger.info(`Connected to ${uri} `)})
-
-console.log("Path = " + "/" + process.env.API_URL_PREFIX +  '/api')
-  app.get(( "/" + process.env.API_URL_PREFIX +  '/api' ).replace("//","/"), async (req: Request, res: Response) => {
+await mongo.client.connect().then(() => {logger.info(`Connected to ${mongo.uri} `)})
+await redis.run();
+app.get(( "/" + process.env.API_URL_PREFIX +  '/api/getField' ).replace("//","/"), async (req: Request, res: Response) => {
   try{
-    console.log("GET")
-    parseInput(req.query.color,req.query.x,req.query.y,async (color: String,x: String,y: String) => {
-        await insertColor(color,x,y);
-        const pixelsArray = await pixels.find({}).toArray()
-        res.send(pixelsArray);
-    })
+    console.log(await redis.readField())
+    res.send( await redis.readField() );
   }
   catch (error){
     logger.error(error.message)
     res.send(error.message) 
   }
   })
-  
+app.post(( "/" + process.env.API_URL_PREFIX +  '/api/setColor' ).replace("//","/"), async (req: Request, res: Response) => {
+  try{
+      console.log(req.body)
+      console.log(req.body.x,req.body.y,req.body.color)
+      await parseInput(<string>req.body.color,req.body.x,req.body.y,async (color:Buffer,x:number,y:number)=>{
+          await redis.setColor(x,y,color);
+      }).catch((error) => {throw error})
+      res.sendStatus(200)
+
+  }
+  catch (error){
+    logger.error(error.message)
+    res.statusCode = 400
+    res.send(error.message) 
+  }
+  })
+   
   app.listen(port, () => {
-    logger.info("Listening on port 300")
+    logger.info(`Listening on port ${port}`)
   });
 }
- run();
+
+run();

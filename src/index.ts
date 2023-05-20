@@ -18,8 +18,9 @@ let xoff = 0;
 let yoff = 0
 let mouseMovedHold = false;
 let timeouts:number[] = [];
-let lastRect = {x:0,y:0}
+let lastRect = {x:1,y:1}
 function mapCords(x:number,y:number){
+    
     return WIDTH * y + x*4
 }
 function getPixelFillStyle(x:number,y:number){
@@ -81,19 +82,43 @@ function hexToRgbA(hex:string): number[]{
     }
     throw new Error('Bad Hex');
 }
+function sendPixel(x:number,y:number){
+
+    const data = {x:x,y:y,color: selectedColor.value.replace("#","")} 
+    fetch("/api/setColor",{
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data),
+    })
+    }
 let canvas = <HTMLCanvasElement> document.getElementById("main");
 const ctx = canvas.getContext("2d")!
-let bytes = new Uint8ClampedArray(WIDTH*HEIGHT*4).map((x,i) => 
-    {
-        if((i+1)%4==0 || (i+1)%4==0) return 255
-        else return x;
-        // return 255
-    });
+//let bytes = new Uint8ClampedArray(WIDTH*HEIGHT*4).map((x,i) => 
+//    {
+//        if((i+1)%4==0 || (i+1)%4==0) return 255
+//        else return x;
+//        // return 255
+//    });
+const fieldFetch =  await fetch("/api/getField") 
+const data = await fieldFetch.arrayBuffer()
+let bytes = new Uint8ClampedArray(data); 
+if(bytes.length !== WIDTH*HEIGHT*4){
+    console.log(bytes)
+    const paddingLength =  WIDTH*HEIGHT*4 - bytes.length
+    const padding = new Uint8ClampedArray(paddingLength)
+    for(var i =3; i<paddingLength; i+=4){
+        padding[i] = 255
+    }
+    var temp = new Uint8ClampedArray(WIDTH*HEIGHT*4)
+    temp.set(bytes)
+    temp.set(padding,bytes.length)
+    bytes = temp;
+}
+
 let pixels : ImageData =  new ImageData(bytes,WIDTH);
 console.log(pixels.data)
 ctx.putImageData(pixels,0,0);
 ctx.imageSmoothingEnabled = false;
-
 
 
 canvas.addEventListener("mousedown", (e) => {
@@ -113,6 +138,7 @@ canvas.addEventListener("mouseup", (e) => {
         // setting color
         if ((mouseX == lastRect.x ) && (mouseY == lastRect.y )) {
             drawPixel(mouseX,mouseY)
+            sendPixel(mouseX,mouseY)
             return
         };
         // dimming pixel logic
@@ -121,6 +147,7 @@ canvas.addEventListener("mouseup", (e) => {
         redrawPixel(lastRect.x,lastRect.y)
         lastRect.x = mouseX
         lastRect.y = mouseY
+        console.log()
         selectPixel(mouseX,mouseY)
 
         
@@ -194,3 +221,4 @@ colors.forEach((color) => {
 
     }
 })
+export {}
