@@ -19,7 +19,7 @@ await client.connect();
 export async function setColor(x: number, y: number, color: Buffer){
     const offset = getOffset(x,y);
     const colorInt: number = colorBufferToInt(color,4)
-    await client.bitField("field",[{
+     client.bitField("field",[{
         operation: "SET",
         encoding: "u32",
         offset: "#" + offset.toString(),
@@ -32,7 +32,7 @@ export async function setColor(x: number, y: number, color: Buffer){
 export async function setColorTransaction(x: number, y: number, color: Buffer,transaction: any){
     const offset = getOffset(x,y);
     const colorInt = color.readUint32BE()
-    await transaction.bitField("field",[{
+     transaction.bitField("field",[{
         operation: "SET",
         encoding: "u32",
         offset: "#" + offset.toString(),
@@ -58,7 +58,7 @@ export async function initializeEmptyField(){
         }
 
     }
-     await transaction.exec(true);
+      transaction.exec(true);
 
 
 }
