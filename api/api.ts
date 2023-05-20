@@ -31,9 +31,9 @@ const run = async () => {
 
 await mongo.client.connect().then(() => {logger.info(`Connected to ${mongo.uri} `)})
 await redis.run();
+redis.initializeEmptyField()
 app.get(( "/" + process.env.API_URL_PREFIX +  '/api/getField' ).replace("//","/"), async (req: Request, res: Response) => {
   try{
-    console.log(await redis.readField())
     res.send( await redis.readField() );
   }
   catch (error){
@@ -43,8 +43,6 @@ app.get(( "/" + process.env.API_URL_PREFIX +  '/api/getField' ).replace("//","/"
   })
 app.post(( "/" + process.env.API_URL_PREFIX +  '/api/setColor' ).replace("//","/"), async (req: Request, res: Response) => {
   try{
-      console.log(req.body)
-      console.log(req.body.x,req.body.y,req.body.color)
       await parseInput(<string>req.body.color,req.body.x,req.body.y,async (color:Buffer,x:number,y:number)=>{
           await redis.setColor(x,y,color);
       }).catch((error) => {throw error})

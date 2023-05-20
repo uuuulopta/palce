@@ -93,13 +93,9 @@ function sendPixel(x:number,y:number){
     }
 let canvas = <HTMLCanvasElement> document.getElementById("main");
 const ctx = canvas.getContext("2d")!
-//let bytes = new Uint8ClampedArray(WIDTH*HEIGHT*4).map((x,i) => 
-//    {
-//        if((i+1)%4==0 || (i+1)%4==0) return 255
-//        else return x;
-//        // return 255
-//    });
-const fieldFetch =  await fetch("/api/getField") 
+let fieldFetch =  await fetch("/api/getField");
+( document.getElementsByClassName("loader")[0] as HTMLElement).style.display = "none";
+( document.getElementById("main") as HTMLCanvasElement).style.display = "block";
 const data = await fieldFetch.arrayBuffer()
 let bytes = new Uint8ClampedArray(data); 
 if(bytes.length !== WIDTH*HEIGHT*4){

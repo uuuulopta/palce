@@ -1,13 +1,11 @@
 import { createClient,commandOptions } from 'redis';
 import { logger } from './loggingSetup';
 
-function colorBufferToInt(color: Buffer): number{
-const buf = Buffer.alloc(4)
+function colorBufferToInt(color: Buffer,bytes:number): number{
+const buf = Buffer.alloc(bytes)
 const temp = color;
-console.log(color)
-console.log(buf)
 temp.copy(buf, buf.length - temp.length)
-return buf.readUIntBE(0,4)
+return buf.readUIntBE(0,bytes)
 }
 const getOffset = (x: number,y: number): number => { return  500 * y + x };
 const client = createClient();
@@ -20,8 +18,7 @@ await client.connect();
 }
 export async function setColor(x: number, y: number, color: Buffer){
     const offset = getOffset(x,y);
-    const colorInt: number = colorBufferToInt(color)
-    console.log(`ColorInt: ${colorInt},Offset: ${offset}`)
+    const colorInt: number = colorBufferToInt(color,4)
     await client.bitField("field",[{
         operation: "SET",
         encoding: "u32",
@@ -32,6 +29,18 @@ export async function setColor(x: number, y: number, color: Buffer){
 
 }
 
+export async function setColorTransaction(x: number, y: number, color: Buffer,transaction: any){
+    const offset = getOffset(x,y);
+    const colorInt = color.readUint32BE()
+    await transaction.bitField("field",[{
+        operation: "SET",
+        encoding: "u32",
+        offset: "#" + offset.toString(),
+        value: colorInt
+
+    }])
+
+}
 export async function readField(){
    const field = await client.get(commandOptions({returnBuffers:true}),"field");
    //TODO: if field is empty transfer mongodb to redis and read field again
@@ -39,4 +48,18 @@ export async function readField(){
     return Buffer.from( Uint8ClampedArray.from(field) ) 
 }
 
+// TODO: find a better solution
+// when it gets connected to mongodb it should just pull data from it
+export async function initializeEmptyField(){
+    const transaction = client.multi()
+    for(var x = 0;x<500;x++){
+        for(var y = 0;y<500;y++){
+           setColorTransaction(x,y,Buffer.from("FFFFFFFF","hex"),transaction)
+        }
+
+    }
+     await transaction.exec(true);
+
+
+}
 

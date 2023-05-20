@@ -34,13 +34,21 @@
             </div>
    </div>
     <div id="control">
-            <canvas id="main" height="500" width="500"></canvas>
+           <div class="borderWrapper"><div class="loader"></div>
+ <canvas id="main" height="500" width="500"></canvas></div>
+           
+                   
     </div>
     <script type="module" src="./index.js" ></script>
     <style>
         input[type="color"]{
             opacity: 0.5;
             width: calc(25vw / 4);
+        }
+        .borderWrapper{
+            height:500px; 
+            width: 500px;
+            border: solid 1px gray;
         }
 
         .colorWrapper{
@@ -76,6 +84,7 @@
             
         }
         body{
+            background-color: #f3f3f3;
             overflow: hidden;
         }
         
@@ -83,6 +92,8 @@
             /* border: solid 1px black transparent; */
             /* margin:-1px; */
             image-rendering: pixelated;
+            
+            display:none;
 
         }
         #control{
@@ -94,6 +105,21 @@
             transform: scale(1) translate(0px, 0px);
 
 
+        }
+        .loader {
+            position: relative;
+            margin: calc(50% - 60px);
+            border: 16px solid #1B9C85; /* Light grey */
+            border-top: 16px solid #FFE194; /* Blue */
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
   
     </style>
