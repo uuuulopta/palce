@@ -3,3 +3,4 @@ build/index.js
 build/api/config/database.json
 */.env
 *.log
+*/*.js
