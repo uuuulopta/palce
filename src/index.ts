@@ -51,6 +51,16 @@ function drawPixel(x:number,y:number){
     ctx.fillRect(x,y,1,1)
 
 }
+function wsDrawPixel(x:number,y:number,colorHex:string){
+    let i = mapCords(x,y);       
+    ctx.clearRect(x,y,1,1)
+    ctx.fillStyle = colorHex
+    let rgb = hexToRgbA(colorHex)
+    bytes[i] = rgb[0]  
+    bytes[i+1] = rgb[1]  
+    bytes[i+2] = rgb[2]  
+    ctx.fillRect(x,y,1,1)
+}
 function selectPixel(x : number, y : number): void{
     for(let i = 0.9; i>=0; i-=0.1){
         timeouts.push(window.setTimeout( () => {
@@ -72,7 +82,7 @@ function setTransform() {
 }
 function hexToRgbA(hex:string): number[]{
     var c:any;
-    if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){
+    if(/^#?([A-Fa-f0-9]{3}){1,2}$/.test(hex)){
         c= hex.substring(1).split('');
         if(c.length== 3){
             c= [c[0], c[0], c[1], c[1], c[2], c[2]];
@@ -91,6 +101,10 @@ function sendPixel(x:number,y:number){
         body: JSON.stringify(data),
     })
     }
+// Connect to websocket
+const ws = new WebSocket("ws://localhost:8080");
+
+// Initial Canvas rendering
 let canvas = <HTMLCanvasElement> document.getElementById("main");
 const ctx = canvas.getContext("2d")!
 let fieldFetch =  await fetch("/api/getField");
@@ -108,7 +122,17 @@ console.log(pixels.data)
 ctx.putImageData(pixels,0,0);
 ctx.imageSmoothingEnabled = false;
 
-
+// Listeners
+ws.addEventListener("message", (event) => {
+    const data:string = event.data
+    // x y color
+    const params = data.split(" ")
+    console.log(params)
+    const x:number = Number( params[0] )
+    const y:number = Number( params[1] )
+    const color: string = "#" + params[2]
+    wsDrawPixel(x,y,color)
+});
 canvas.addEventListener("mousedown", (e) => {
     mousedown = true;   
     mousedownXY = [e.clientX - xoff,e.clientY -yoff]
@@ -127,6 +151,7 @@ canvas.addEventListener("mouseup", (e) => {
         if ((mouseX == lastRect.x ) && (mouseY == lastRect.y )) {
             drawPixel(mouseX,mouseY)
             sendPixel(mouseX,mouseY)
+            ws.send(`${mouseX} ${mouseY} ${ selectedColor.value.replace("#","") }`) 
             return
         };
         // dimming pixel logic

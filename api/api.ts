@@ -1,12 +1,8 @@
 import {Express, Request, Response,} from "express"
 import express = require("express");
-import * as mongo  from "./db";
-import * as redis from "./redis"
-import {logger} from "./loggingSetup"
-import dotenv = require('dotenv')
-import { BSON } from "mongodb";
-dotenv.config()
+import {mongo,redis,logger,dotenv,BSON} from "./imports"
 
+dotenv.config()
 async function parseInput(color: string, x: string, y: string, callback: Function){
     const hexRegex = new RegExp("[0-9A-Fa-f]{6}")
     if(typeof color !== "string") throw Error("Color is not a string!")
@@ -19,6 +15,7 @@ async function parseInput(color: string, x: string, y: string, callback: Functio
             await callback(Buffer.from( color + "FF","hex" ),Number(x),Number(y))
     }
 }
+
 
 const app: Express = express()
 app.use(express.json())

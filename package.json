@@ -4,9 +4,10 @@
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "watch-node": "nodemon api/api.ts ",
-    "watch-dom":"tsc --watch src/index.ts --outdir build --module es2022 --target es2017",
-    "watch": "concurrently -i -n nodemon,tsc -c bgGreen,bgYellow 'npm:watch-node' 'npm:watch-dom'",
+    "watch-express": "nodemon api/api.ts ",
+    "watch-dom": "tsc --watch src/index.ts --outdir build --module es2022 --target es2017",
+    "watch-ws": "nodemon api/ws.ts",
+    "watch": "concurrently -i -n nodemon,tsc,ws -c bgGreen,bgYellow,bgBlue 'npm:watch-express' 'npm:watch-dom' 'npm:watch-ws' ",
     "build": "nodemon api/api.ts && tsc src/index.ts  --outdir build --module es2022 --target es2017"
   },
   "keywords": [],
@@ -15,10 +16,12 @@
   "devDependencies": {
     "@types/express": "^4.17.17",
     "@types/node": "^20.1.4",
+    "@types/ws": "^8.5.4",
     "concurrently": "^8.0.1",
     "nodemon": "^2.0.22",
     "ts-node": "^10.9.1",
-    "typescript": "^5.0.4"
+    "typescript": "^5.0.4",
+    "ws": "^8.13.0"
   },
   "dependencies": {
     "dotenv": "^16.0.3",
