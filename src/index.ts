@@ -36,15 +36,16 @@ function redrawPixel(x:number,y:number){
 function dimPixel(opacity: number,x: number,y: number){
     let i = mapCords(x,y);       
     ctx.clearRect(x,y,1,1)
-    ctx.fillStyle = `rgba(${bytes[i]},${bytes[i+1]},${bytes[i+2]},${opacity})`
-    if(bytes[i] == 255 && bytes[i+1] == 255 && bytes[i+2] == 255) ctx.fillStyle = ctx.fillStyle=`rgba(${0},${0},${0},${opacity})`
+    const colors = hexToRgba( selectedColor.value )
+
+    ctx.fillStyle = `rgba(${colors[0]},${colors[1]},${colors[2]},${opacity})`
     ctx.fillRect(x,y,1,1)
 }
 function drawPixel(x:number,y:number){
     let i = mapCords(x,y);       
     ctx.clearRect(x,y,1,1)
     ctx.fillStyle = selectedColor.value
-    let rgb = hexToRgbA(selectedColor.value)
+    let rgb = hexToRgba(selectedColor.value)
     bytes[i] = rgb[0]  
     bytes[i+1] = rgb[1]  
     bytes[i+2] = rgb[2]  
@@ -55,7 +56,7 @@ function wsDrawPixel(x:number,y:number,colorHex:string){
     let i = mapCords(x,y);       
     ctx.clearRect(x,y,1,1)
     ctx.fillStyle = colorHex
-    let rgb = hexToRgbA(colorHex)
+    let rgb = hexToRgba(colorHex)
     bytes[i] = rgb[0]  
     bytes[i+1] = rgb[1]  
     bytes[i+2] = rgb[2]  
@@ -80,7 +81,7 @@ function setTransform() {
     control.style.transform = "translate(" + xoff + "px, " + yoff + "px) scale(" + scale + ")";
     scaleSpan.innerHTML = scale.toString();
 }
-function hexToRgbA(hex:string): number[]{
+function hexToRgba(hex:string): number[]{
     var c:any;
     if(/^#?([A-Fa-f0-9]{3}){1,2}$/.test(hex)){
         c= hex.substring(1).split('');
