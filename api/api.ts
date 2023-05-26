@@ -31,16 +31,13 @@ const run = async () => {
 
 await mongo.client.connect().then(() => {logger.info(`Connected to ${mongo.uri} `)})
 await redis.run();
-//await redis.initializeEmptyField().then(() => console.log("initialized field" ))
 app.get(( "/" + process.env.API_URL_PREFIX +  '/api/getField' ).replace("//","/"), async (req: Request, res: Response) => {
   try{
-    console.time("resp")
-    if(redis.empty()){
+    if(!await redis.empty()){
         var field = await mongo.exportField()
         await redis.importField(field)
     }
     res.send( await redis.readField() );
-    console.timeEnd("resp")
   }
   catch (error){
     logger.error(error.message)

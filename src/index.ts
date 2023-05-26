@@ -98,10 +98,11 @@ let fieldFetch =  await fetch("/api/getField");
 ( document.getElementById("main") as HTMLCanvasElement).style.display = "block";
 const data = await fieldFetch.arrayBuffer()
 let bytes = new Uint8ClampedArray(data); 
-bytes =  bytes.map((v,i) => {
-    if((i+1)%4==0) return 255
+bytes = bytes.map((v,i) => {
+    if((i+1)%4 == 0) return 255
     else return v
 })
+console.log(bytes)
 let pixels : ImageData =  new ImageData(bytes,WIDTH);
 console.log(pixels.data)
 ctx.putImageData(pixels,0,0);
