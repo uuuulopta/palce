@@ -11,6 +11,7 @@ const colors = Array.from(document.getElementsByTagName("input"))!
 let colorClickCounter= 0;
 let selectedColor: HTMLInputElement = colors[0];
 let mousedown = false;
+let rightClickDown = false;
 let mousedownXY: number[] = [0,0]
 let mouseXY: number[] = [0,0];
 let scale = 1;
@@ -135,12 +136,14 @@ ws.addEventListener("message", (event) => {
     wsDrawPixel(x,y,color)
 });
 canvas.addEventListener("mousedown", (e) => {
+    if(e.button == 2) rightClickDown = true; 
     mousedown = true;   
     mousedownXY = [e.clientX - xoff,e.clientY -yoff]
     console.log(mousedownXY)
 } )
 canvas.addEventListener("mouseup", (e) => {
     mousedown = false;
+    rightClickDown = false;
     let box = canvas.getBoundingClientRect();
     if(!mouseMovedHold){
         let mouseX = e.clientX - box.left ;
@@ -168,7 +171,19 @@ canvas.addEventListener("mouseup", (e) => {
     }
     mouseMovedHold = false;
 } )
+
 control.addEventListener("mousemove", (e) => {
+    if(rightClickDown){
+        let box = canvas.getBoundingClientRect();
+        let mouseX = e.clientX - box.left ;
+        let mouseY = e.clientY - box.top ;
+        mouseX = Math.floor((mouseX / box.width) * canvas.width);
+        mouseY = Math.floor((mouseY / box.height) * canvas.height);
+        drawPixel(mouseX,mouseY)
+        sendPixel(mouseX,mouseY)
+        ws.send(`${mouseX} ${mouseY} ${ selectedColor.value.replace("#","") }`) 
+        return
+    }
     if(mousedown){
         xoff = (e.clientX - mousedownXY[0]);
         yoff = (e.clientY - mousedownXY[1]);
@@ -176,7 +191,7 @@ control.addEventListener("mousemove", (e) => {
         mouseMovedHold = true;
     }
 })
-
+canvas.addEventListener("contextmenu",(e) => e.preventDefault())
 // thanks to fmacdee
 body.onwheel = function(e) {
     // take the scale into account with the offset
