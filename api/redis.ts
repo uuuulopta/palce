@@ -18,7 +18,6 @@ await client.connect();
 }
 export async function setColor(x: number, y: number, color: Buffer){
     const offset = getOffset(x,y);
-    console.log(x,y)
     const colorInt: number = colorBufferToInt(color,4)
      client.bitField("field",[{
         operation: "SET",
@@ -53,7 +52,7 @@ export async function initializeEmptyField(){
     client.setRange("field",0,Buffer.from(empty))
     }
 
-export async function importMongo(data: WithId<BSON.Document>[]){
+export async function importField(data: WithId<BSON.Document>[]){
     const transaction = client.multi()
     initializeEmptyField()
     let pixel : WithId<BSON.Document> | undefined = data.shift();
@@ -65,5 +64,8 @@ export async function importMongo(data: WithId<BSON.Document>[]){
         pixel = data.shift() 
     }
     await transaction.exec(true);
+}
+export async function empty(){
+   return await client.exists("field")
 }
 

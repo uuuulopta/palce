@@ -19,7 +19,7 @@ export async function insertColor(color: Buffer,x: number,y: number): Promise<vo
     const obj: Pixel = {color: color, x:  x ,y:   y  }
     await pixels.updateOne({x: obj.x,y: obj.y},{ $set: obj },{upsert: true});
 }
-export async function exportFieldRedis(){
+export async function exportField(){
    return await pixels.find({}).toArray();
 }
 

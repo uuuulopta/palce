@@ -4,6 +4,7 @@ import * as mongo  from "./db";
 import * as redis from "./redis"
 import {logger} from "./loggingSetup"
 import dotenv = require('dotenv')
+import { BSON } from "mongodb";
 dotenv.config()
 
 async function parseInput(color: string, x: string, y: string, callback: Function){
@@ -18,23 +19,28 @@ async function parseInput(color: string, x: string, y: string, callback: Functio
             await callback(Buffer.from( color + "FF","hex" ),Number(x),Number(y))
     }
 }
+
 const app: Express = express()
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
 const port = 3000
 
 
-const hexToBase64 = function(hex: String) {return Buffer.from(hex, 'hex').toString('base64') }
-const Base64ToHex = function(base64: String) {return Buffer.from(base64, 'base64').toString('hex') }
 
 const run = async () => {
 
 await mongo.client.connect().then(() => {logger.info(`Connected to ${mongo.uri} `)})
 await redis.run();
-redis.initializeEmptyField()
+//await redis.initializeEmptyField().then(() => console.log("initialized field" ))
 app.get(( "/" + process.env.API_URL_PREFIX +  '/api/getField' ).replace("//","/"), async (req: Request, res: Response) => {
   try{
+    console.time("resp")
+    if(redis.empty()){
+        var field = await mongo.exportField()
+        await redis.importField(field)
+    }
     res.send( await redis.readField() );
+    console.timeEnd("resp")
   }
   catch (error){
     logger.error(error.message)
@@ -44,6 +50,7 @@ app.get(( "/" + process.env.API_URL_PREFIX +  '/api/getField' ).replace("//","/"
 app.post(( "/" + process.env.API_URL_PREFIX +  '/api/setColor' ).replace("//","/"), async (req: Request, res: Response) => {
   try{
       await parseInput(<string>req.body.color,req.body.x,req.body.y,async (color:Buffer,x:number,y:number)=>{
+          await mongo.insertColor(color,x,y)
           await redis.setColor(x,y,color);
       }).catch((error) => {throw error})
       res.sendStatus(200)
