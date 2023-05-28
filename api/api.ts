@@ -1,8 +1,11 @@
 import {Express, Request, Response,} from "express"
 import express = require("express");
-import {mongo,redis,logger,BSON} from "./imports"
+import {Mongo,Redis,logger as loggerParent} from "./imports"
 import "dotenv/config"
 
+const logger = loggerParent.child({parent: "express",caller:""})
+const redis = new Redis("express")
+const mongo = new Mongo("express")
 async function parseInput(color: string, x: string, y: string, callback: Function){
     const hexRegex = new RegExp("[0-9A-Fa-f]{6}")
     if(typeof color !== "string") throw Error("Color is not a string!")

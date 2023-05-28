@@ -1,7 +1,7 @@
 import { WebSocketServer,WebSocket } from 'ws';
-import {mongo,redis,logger,BSON} from "./imports"
+import {Redis,logger,BSON} from "./imports"
 import "dotenv/config"
-
+const redis = new Redis("websocket")
 function parseInput(color: string, x: string, y: string, callback: Function){
     const hexRegex = new RegExp("[0-9A-Fa-f]{6}")
     if(!hexRegex.test(color)) throw Error("Bad color value!");
