@@ -10,9 +10,15 @@ function parseInput(color: string, x: string, y: string, callback: Function){
 }
 const ws = new WebSocketServer({ port: 8080 });
 console.log("Lisetning on 8080")
-
+redis.run()
 ws.on("connection",function connection(wsclient){
     wsclient.on("error", logger.info)
+    wsclient.on("close",()=> {
+        if(ws.clients.size == 0){
+            console.log("Connection closed")
+            redis.setExpire()
+        }
+    })
     wsclient.on('message', function message(data) {
         try {
             console.log('received: %s', data);
@@ -32,3 +38,4 @@ ws.on("connection",function connection(wsclient){
         }
     });
 })
+

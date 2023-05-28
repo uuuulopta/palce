@@ -68,4 +68,6 @@ export async function importField(data: WithId<BSON.Document>[]){
 export async function empty(){
    return await client.exists("field")
 }
-
+export async function setExpire(){
+    await client.expire("field",1800)
+}
