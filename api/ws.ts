@@ -1,5 +1,6 @@
 import { WebSocketServer,WebSocket } from 'ws';
-import {mongo,redis,logger,dotenv,BSON} from "./imports"
+import {mongo,redis,logger,BSON} from "./imports"
+import "dotenv/config"
 
 function parseInput(color: string, x: string, y: string, callback: Function){
     const hexRegex = new RegExp("[0-9A-Fa-f]{6}")
@@ -8,8 +9,11 @@ function parseInput(color: string, x: string, y: string, callback: Function){
     if(!RegExp( "[0-9]+" ).test(y)) throw Error("Bad Y")
     callback()
 }
-const ws = new WebSocketServer({ port: 8080 });
-console.log("Lisetning on 8080")
+//                                      v gotta do this because typescripts type of env is string | undefined,  even though it can be a number ¯\_(ツ)_/¯
+const ws = new WebSocketServer({port: <number><unknown> process.env.WEBSOCKET_PORT,
+                                host: process.env.WEBSOCKET_HOST   
+                              });
+console.log(`Lisetning on ${process.env.WEBSOCKET_HOST}:${process.env.WEBSOCKET_PORT}`)
 redis.run()
 ws.on("connection",function connection(wsclient){
     wsclient.on("error", logger.info)

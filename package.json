@@ -5,10 +5,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "watch-express": "nodemon api/api.ts ",
-    "watch-dom": "tsc --watch src/index.ts --outdir build --module es2022 --target es2017",
+    "watch-dom": "tsc --watch -p src",
     "watch-ws": "nodemon api/ws.ts",
-    "watch": "concurrently -i -n nodemon,tsc,ws -c bgGreen,bgYellow,bgBlue 'npm:watch-express' 'npm:watch-dom' 'npm:watch-ws' ",
-    "build": "nodemon api/api.ts && tsc src/index.ts  --outdir build --module es2022 --target es2017"
+    "watch": "concurrently -i -n express,tsc,ws -c bgGreen,bgYellow,bgBlue 'npm:watch-express' 'npm:watch-dom' 'npm:watch-ws' ",
+    "build": "tsc -p api && tsc -p src  && tsc build_env.ts && node build_env.js",
+    "servers": "concurrently -i -n express,ws -c bgGreen,bgBlue \"node api/api.js\" \"node api/ws.js\""
   },
   "keywords": [],
   "author": "",

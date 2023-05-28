@@ -1,4 +1,5 @@
-
+//@ts-ignore
+import {env} from "./env.js"
 const WIDTH = 500;
 const HEIGHT = 500;
 const body = document.getElementsByTagName("body")[0]!;
@@ -97,19 +98,19 @@ function hexToRgba(hex:string): number[]{
 function sendPixel(x:number,y:number){
 
     const data = {x:x,y:y,color: selectedColor.value.replace("#","")} 
-    fetch("/api/setColor",{
+    fetch(`${env["API_URL_PREFIX"]}/api/setColor`,{
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify(data),
     })
     }
 // Connect to websocket
-const ws = new WebSocket("ws://localhost:8080");
+const ws = new WebSocket(`ws://${env["WEBSOCKET_HOST"]}:${env["WEBSOCKET_PORT"]}`);
 
 // Initial Canvas rendering
 let canvas = <HTMLCanvasElement> document.getElementById("main");
 const ctx = canvas.getContext("2d")!
-let fieldFetch =  await fetch("/api/getField");
+let fieldFetch =  await fetch(`${env["API_URL_PREFIX"]}/api/getField`);
 ( document.getElementsByClassName("loader")[0] as HTMLElement).style.display = "none";
 ( document.getElementById("main") as HTMLCanvasElement).style.display = "block";
 const data = await fieldFetch.arrayBuffer()

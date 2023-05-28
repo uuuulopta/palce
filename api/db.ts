@@ -1,5 +1,6 @@
 import {  MongoClient, ServerApiVersion, WithId, Document} from "mongodb";
-export const uri = "mongodb://127.0.0.1:27017";
+import "dotenv/config"
+export const uri = process.env.MONGO_URI;
 export const client = new MongoClient(uri,  {
         serverApi: {
             version: ServerApiVersion.v1,

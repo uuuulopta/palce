@@ -1,8 +1,8 @@
 import {Express, Request, Response,} from "express"
 import express = require("express");
-import {mongo,redis,logger,dotenv,BSON} from "./imports"
+import {mongo,redis,logger,BSON} from "./imports"
+import "dotenv/config"
 
-dotenv.config()
 async function parseInput(color: string, x: string, y: string, callback: Function){
     const hexRegex = new RegExp("[0-9A-Fa-f]{6}")
     if(typeof color !== "string") throw Error("Color is not a string!")
@@ -20,7 +20,7 @@ async function parseInput(color: string, x: string, y: string, callback: Functio
 const app: Express = express()
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
-const port = 3000
+const port = process.env.API_PORT
 
 
 
@@ -28,7 +28,8 @@ const run = async () => {
 
 await mongo.client.connect().then(() => {logger.info(`Connected to ${mongo.uri} `)})
 await redis.run();
-app.get(( "/" + process.env.API_URL_PREFIX +  '/api/getField' ).replace("//","/"), async (req: Request, res: Response) => {
+const getField_uri =( "/" + process.env.API_URL_PREFIX +  '/api/getField' ).replace("//","/")
+app.get( getField_uri, async (req: Request, res: Response) => {
   try{
     if(!await redis.empty()){
         var field = await mongo.exportField()
@@ -41,7 +42,8 @@ app.get(( "/" + process.env.API_URL_PREFIX +  '/api/getField' ).replace("//","/"
     res.send(error.message) 
   }
   })
-app.post(( "/" + process.env.API_URL_PREFIX +  '/api/setColor' ).replace("//","/"), async (req: Request, res: Response) => {
+const setColor_uri = ( "/" + process.env.API_URL_PREFIX +  '/api/setColor' ).replace("//","/")
+app.post(setColor_uri, async (req: Request, res: Response) => {
   try{
       await parseInput(<string>req.body.color,req.body.x,req.body.y,async (color:Buffer,x:number,y:number)=>{
           await mongo.insertColor(color,x,y)
@@ -58,7 +60,9 @@ app.post(( "/" + process.env.API_URL_PREFIX +  '/api/setColor' ).replace("//","/
   })
    
   app.listen(port, () => {
-    logger.info(`Listening on port ${port}`)
+    logger.info(`Listening on port ${process.env.API_PORT}`)
+    logger.info(`Listening for GET at ${getField_uri}`)
+    logger.info(`Listening for POST at ${setColor_uri}`)
   });
 }
 

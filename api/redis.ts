@@ -1,6 +1,7 @@
 import { createClient,commandOptions } from 'redis';
 import { logger } from './loggingSetup';
 import  {WithId,BSON} from "mongodb"
+import "dotenv/config"
 function colorBufferToInt(color: Buffer,bytes:number): number{
 const buf = Buffer.alloc(bytes)
 const temp = color;
@@ -8,11 +9,11 @@ temp.copy(buf, buf.length - temp.length)
 return buf.readUIntBE(0,bytes)
 }
 const getOffset = (x: number,y: number): number => { return  500 * y + x };
-const client = createClient();
+const client = createClient({url: process.env.REDIS_URL });
 export const run = async() => {
 
 client.on('error', err => logger.error('Redis Client Error', err));
-client.on('connect',() => {logger.info("Successfully connected to redis")});
+client.on('connect',() => {logger.info(`Connected to redis at ${process.env.REDIS_URL}`)});
 await client.connect();
 
 }
