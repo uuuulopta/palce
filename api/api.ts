@@ -11,12 +11,11 @@ async function parseInput(color: string, x: string, y: string, callback: Functio
     if(typeof color !== "string") throw Error("Color is not a string!")
         if(typeof x !== "number") throw Error("X is not a number!")
         if(typeof y !== "number") throw Error("Y is not a number!")
-        if(color && x && y){
-            if(!hexRegex.test(color)) throw Error("Bad color value!");
-            if(!RegExp( "[0-9]+" ).test(x)) throw Error("Bad X")
-            if(!RegExp( "[0-9]+" ).test(y)) throw Error("Bad Y")
-            await callback(Buffer.from( color + "FF","hex" ),Number(x),Number(y))
-    }
+        if(!hexRegex.test(color)) throw Error("Bad color value!");
+        if(!RegExp( "[0-9]+" ).test(x)) throw Error("Bad X")
+        if(!RegExp( "[0-9]+" ).test(y)) throw Error("Bad Y")
+        await callback(Buffer.from( color + "FF","hex" ),Number(x),Number(y))
+    
 }
 
 
@@ -49,6 +48,7 @@ const setColor_uri = ( "/" + process.env.API_URL_PREFIX +  '/api/setColor' ).rep
 app.post(setColor_uri, async (req: Request, res: Response) => {
   try{
       await parseInput(<string>req.body.color,req.body.x,req.body.y,async (color:Buffer,x:number,y:number)=>{
+          logger.debug(`${x },${ y }`);
           await mongo.insertColor(color,x,y)
           await redis.setColor(x,y,color);
       }).catch((error) => {throw error})
