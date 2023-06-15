@@ -3,6 +3,7 @@
 <head>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,9 +13,13 @@
     
     
     
+    
     <div id="draw">
         <span style="color: gray;">Scale:<span id="scale">1</span></span>
         <div class="drawWrapper">
+
+            
+            <span id="picker" class="material-symbols-outlined ">colorize </span>
                 <div class="colorWrapper">
                     <input style="opacity:1" type="color" name="" id="">
                     <input type="color" name="" id="">
@@ -33,6 +38,7 @@
                 </div>
             </div>
    </div>
+   
     <div id="control">
            <div class="borderWrapper"><div class="loader"></div>
  <canvas id="main" height="500" width="500"></canvas></div>
@@ -41,6 +47,13 @@
     </div>
     <script type="module" src="./index.js" ></script>
     <style>
+        #picker{
+            background-color: rgba(200,200,200,0.1); 
+            height: fit-content;
+        }
+        #picker:hover{
+        background-color: rgba(125,125,125,0.4);
+        }
         input[type="color"]{
             opacity: 0.5;
             width: calc(25vw / 4);

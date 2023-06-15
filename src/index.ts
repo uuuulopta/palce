@@ -20,18 +20,28 @@ let xoff = 0;
 let yoff = 0
 let mouseMovedHold = false;
 let timeouts:number[] = [];
-let lastRect = {x:1,y:1}
+let lastRect = {x:-1,y:-1}
 function mapCords(x:number,y:number){
     
-    return WIDTH * y + x*4
+    return ( WIDTH * y + x )*4
 }
 function getPixelFillStyle(x:number,y:number){
     let i = mapCords(x,y);       
     return `rgba(${bytes[i]},${bytes[i+1]},${bytes[i+2]},${i+3})`
 }
+function colorpick(x:number,y:number){
+    let i = mapCords(x,y);
+    let r = bytes[i];
+    let g = bytes[i+1];
+    let b = bytes[i+2];
+    console.log("Colors ",r,g,b);
+}
+
+
 function redrawPixel(x:number,y:number){
     let i = mapCords(x,y);       
     ctx.clearRect(x,y,1,1)
+    console.log(`Redraw pixel ${[bytes[i],bytes[i+1],bytes[i+2]]} `)
     ctx.fillStyle = `rgba(${bytes[i]},${bytes[i+1]},${bytes[i+2]},1)`
     ctx.fillRect(x,y,1,1)
 }
@@ -125,6 +135,7 @@ console.log(pixels.data)
 ctx.putImageData(pixels,0,0);
 ctx.imageSmoothingEnabled = false;
 
+console.log( getPixelFillStyle(4,1) )
 // Listeners
 ws.addEventListener("message", (event) => {
     const data:string = event.data
@@ -151,7 +162,11 @@ canvas.addEventListener("mouseup", (e) => {
         let mouseY = e.clientY - box.top ;
         mouseX = Math.floor((mouseX / box.width) * canvas.width);
         mouseY = Math.floor((mouseY / box.height) * canvas.height);
+        console.log(mouseX,mouseY)
         
+        if (pickerSelected){
+            colorpick(mouseX,mouseY);
+        } 
         // setting color
         if ((mouseX == lastRect.x ) && (mouseY == lastRect.y )) {
             drawPixel(mouseX,mouseY)
@@ -162,7 +177,7 @@ canvas.addEventListener("mouseup", (e) => {
         // dimming pixel logic
         timeouts.forEach(x => clearTimeout(x));
         timeouts = [];
-        redrawPixel(lastRect.x,lastRect.y)
+        if(lastRect.x > -1) redrawPixel(lastRect.x,lastRect.y)
         lastRect.x = mouseX
         lastRect.y = mouseY
         console.log()
@@ -251,4 +266,17 @@ colors.forEach((color) => {
 
     }
 })
+// Color picker logic
+const picker = document.getElementById("picker")!
+let pickerSelected: Boolean = false;
+picker.addEventListener("click",(e)=> {
+    pickerSelected = !pickerSelected;
+    if(pickerSelected){
+        picker.style.backgroundColor = "rgba(125,125,125,0.4)"
+    }
+    if(!pickerSelected){
+        picker.style.backgroundColor = "rgba(200,200,200,0.1)"; 
+    }
+})
 export {}
+
