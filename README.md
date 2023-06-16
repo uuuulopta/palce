@@ -3,3 +3,5 @@
 Inspired by reddit's [/r/place](https://www.reddit.com/r/place/) .
 
 Colors are longterm stored inside mongodb and cached inside redis using a bitfield datatype, where offset is the position of a pixel and the pixel itself is stored as an u32 integer.
+
+Uses Websockets for real-time updates.
